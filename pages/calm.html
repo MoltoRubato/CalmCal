@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>CalmCal · Take a breath</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FFF1F5; --primary: #F48FB1; --soft: #FFB6C9;
+      --cream: #FCE4EC; --ink: #3D2B30; --plum: #9D4A6B;
+    }
+
+    body {
+      font-family: Nunito, system-ui, sans-serif;
+      color: var(--ink);
+      min-height: 100vh;
+      background: radial-gradient(circle at 30% 20%, var(--cream) 0%, var(--bg) 50%, var(--soft) 130%);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+
+    /* blobs */
+    .blob { position: absolute; border-radius: 50%; filter: blur(12px); pointer-events: none; }
+    .blob-1 { top: -120px; right: -120px; width: 380px; height: 380px; background: var(--cream); opacity: .6; }
+    .blob-2 { bottom: -160px; left: -100px; width: 420px; height: 420px; background: var(--soft); opacity: .4; filter: blur(14px); }
+
+    /* confetti dots */
+    .dot { position: absolute; border-radius: 50%; opacity: .55; pointer-events: none; }
+
+    .content {
+      text-align: center;
+      max-width: 620px;
+      padding: 40px;
+      position: relative;
+      z-index: 2;
+    }
+
+    #mascot-wrap { margin-bottom: 24px; }
+
+    .eyebrow {
+      font-size: 13px; font-weight: 800; color: var(--plum);
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px;
+    }
+    h1 {
+      font-size: clamp(36px, 6vw, 52px);
+      font-weight: 800; line-height: 1.05;
+      letter-spacing: -1.2px; margin-bottom: 18px;
+    }
+    .sub {
+      font-size: 19px; line-height: 1.55; color: #6B4A55;
+      max-width: 480px; margin: 0 auto 36px;
+    }
+
+    /* breathing circle */
+    #breath-wrap {
+      position: relative; width: 200px; height: 200px;
+      margin: 0 auto 28px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: var(--primary);
+      animation: cc-breathe 8s ease-in-out infinite;
+    }
+    .ring-1 { opacity: .18; }
+    .ring-2 { inset: 30px; opacity: .3; animation-delay: .6s; }
+
+    #breath-text {
+      position: relative; z-index: 2;
+      font-size: 18px; font-weight: 700; color: var(--plum);
+      transition: opacity .6s;
+    }
+
+    @keyframes cc-breathe {
+      0%, 100% { transform: scale(.85); }
+      50%       { transform: scale(1.15); }
+    }
+
+    /* actions */
+    #actions {
+      display: inline-flex; gap: 10px; padding: 14px 18px;
+      background: #fff; border-radius: 999px;
+      box-shadow: 0 10px 30px -8px rgba(124,41,79,.25);
+    }
+    button {
+      height: 36px; padding: 0 18px; border: none; border-radius: 18px;
+      font-family: Nunito, system-ui, sans-serif;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: opacity .15s;
+    }
+    button:hover { opacity: .82; }
+    #btn-timer { background: transparent; color: var(--plum); }
+    #btn-back  { background: var(--primary); color: #fff; }
+
+    #countdown { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="content">
+    <div id="mascot-wrap"></div>
+
+    <div class="eyebrow">✦ &nbsp;Calendar can wait&nbsp; ✦</div>
+    <h1 id="headline">Breathe with bunny.</h1>
+    <p class="sub">
+      You've been planning hard. The week will hold itself together for the next five minutes.
+    </p>
+
+    <div id="breath-wrap">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div id="breath-text">breathe in</div>
+    </div>
+
+    <div id="actions">
+      <button id="btn-timer"><span id="countdown">5:00</span> left</button>
+      <button id="btn-back">I'm ready, go back</button>
+    </div>
+  </div>
+
+  <script src="calm.js"></script>
+</body>
+</html>

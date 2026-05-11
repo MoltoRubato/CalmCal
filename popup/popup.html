@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>CalmCal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <!-- header -->
+    <div id="header">
+      <div id="mascot-slot"></div>
+      <div>
+        <div id="app-name">CalmCal</div>
+        <div id="app-status">Loading…</div>
+      </div>
+    </div>
+
+    <!-- today bar -->
+    <div id="today-bar">
+      <div id="today-label-row">
+        <span class="label-sm" style="font-weight:800">Today</span>
+        <span class="muted">resets at midnight</span>
+      </div>
+      <div id="progress-track">
+        <div id="progress-fill"></div>
+      </div>
+      <div id="progress-label"></div>
+    </div>
+
+    <!-- settings rows -->
+    <div id="settings">
+      <div class="row">
+        <div class="row-label">
+          <div class="row-title">Nudge after</div>
+          <div class="row-sub">Gentle reminder kicks in</div>
+        </div>
+        <div class="seg" id="seg-nudge" data-key="nudgeAfter">
+          <div class="seg-opt" data-val="10">10</div>
+          <div class="seg-opt" data-val="15">15</div>
+          <div class="seg-opt" data-val="20">20</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">
+          <div class="row-title">Strict mode</div>
+          <div class="row-sub" id="strict-sub">Off — gentle nudges only</div>
+        </div>
+        <div class="toggle" id="toggle-strict">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">
+          <div class="row-title">Daily limit</div>
+          <div class="row-sub">Optional cap on planning</div>
+        </div>
+        <div class="seg" id="seg-limit" data-key="dailyLimit">
+          <div class="seg-opt" data-val="0">off</div>
+          <div class="seg-opt" data-val="25">25</div>
+          <div class="seg-opt" data-val="45">45</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">
+          <div class="row-title">Cooldown</div>
+          <div class="row-sub">After closing the tab</div>
+        </div>
+        <div class="seg" id="seg-cooldown" data-key="cooldown">
+          <div class="seg-opt" data-val="5">5</div>
+          <div class="seg-opt" data-val="10">10</div>
+          <div class="seg-opt" data-val="15">15</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">
+          <div class="row-title">Cute mode</div>
+          <div class="row-sub">Pick your tiny friend</div>
+        </div>
+        <div id="mascot-picker">
+          <div class="mascot-opt" data-val="bunny" title="Bunny"></div>
+          <div class="mascot-opt" data-val="cat"   title="Cat"></div>
+          <div class="mascot-opt" data-val="cloud" title="Cloud"></div>
+          <div class="mascot-opt" data-val="flower" title="Flower"></div>
+        </div>
+      </div>
+
+      <div class="row" id="palette-row">
+        <div class="row-label">
+          <div class="row-title">Pink intensity</div>
+          <div class="row-sub">Choose your vibe</div>
+        </div>
+        <div id="palette-picker">
+          <div class="palette-chip" data-val="blush"     style="background:#F48FB1" title="Blush"></div>
+          <div class="palette-chip" data-val="bubblegum" style="background:#FF6FA8" title="Bubblegum"></div>
+          <div class="palette-chip" data-val="rose"      style="background:#E89189" title="Rose"></div>
+          <div class="palette-chip" data-val="dusty"     style="background:#D58792" title="Dusty"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- footer -->
+    <div id="footer">
+      <button id="btn-pause">Pause CalmCal for today</button>
+      <div id="footer-meta">
+        <span>local only</span><span>·</span><span>no data leaves</span><span>·</span><span>v1.0</span>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
