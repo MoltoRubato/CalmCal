@@ -1,4 +1,4 @@
-// CalmCal content script — runs on calendar.google.com
+// CalmCal content script -  runs on calendar.google.com
 // Sends heartbeats while the tab is active & visible; renders overlays on demand.
 
 (function () {
@@ -19,7 +19,7 @@
     return PALETTES[name] || PALETTES.blush;
   }
 
-  // SVG mascots — identical to design prototypes
+  // SVG mascots -  identical to design prototypes
   function mascotSVG(kind, size = 48) {
     const FUR = '#FFF8FB', BLUSH = '#FFB6C9', STROKE = '#E89BB5', FACE = '#3D2B30';
 
@@ -359,7 +359,7 @@
         Tucking Calendar in&nbsp;for&nbsp;you.
       </div>
       <div style="font-size:14px;line-height:1.5;color:#6B4A55;margin-bottom:22px">
-        You chose this earlier — past you was looking after now you.<br>Closing in <span id="cc-l3-s">${secs}</span>&nbsp;seconds.
+        You chose this earlier -  past you was looking after now you.<br>Closing in <span id="cc-l3-s">${secs}</span>&nbsp;seconds.
       </div>
       <div style="display:flex;gap:8px">
         <button id="cc-l3-now" style="${btnStyle(p.primary,'#fff')}flex:1;justify-content:center">

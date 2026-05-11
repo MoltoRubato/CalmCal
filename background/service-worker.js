@@ -1,4 +1,4 @@
-// CalmCal background service worker — MV3
+// CalmCal background service worker -  MV3
 // All state lives in chrome.storage.local (service workers can be killed at any time).
 
 const DEFAULTS = {

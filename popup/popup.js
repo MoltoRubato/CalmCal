@@ -153,16 +153,16 @@ function renderSettings() {
   const tog = document.getElementById('toggle-strict');
   tog.classList.toggle('on', settings.strictMode);
   document.getElementById('strict-sub').textContent =
-    settings.strictMode ? 'Closes tab after limit' : 'Off — gentle nudges only';
+    settings.strictMode ? 'Closes tab after limit' : 'Off -  gentle nudges only';
   tog.addEventListener('click', () => {
     settings.strictMode = !settings.strictMode;
     tog.classList.toggle('on', settings.strictMode);
     document.getElementById('strict-sub').textContent =
-      settings.strictMode ? 'Closes tab after limit' : 'Off — gentle nudges only';
+      settings.strictMode ? 'Closes tab after limit' : 'Off -  gentle nudges only';
     save();
   });
 
-  // mascot picker — inject SVGs
+  // mascot picker -  inject SVGs
   document.querySelectorAll('.mascot-opt').forEach((opt) => {
     opt.innerHTML = mascotSVG(opt.dataset.val, 22);
     opt.classList.toggle('active', opt.dataset.val === settings.mascot);
