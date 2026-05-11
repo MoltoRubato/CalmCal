@@ -203,7 +203,7 @@
         <button id="cc-l1-x" style="width:24px;height:24px;border:0;background:transparent;color:#BAA;font-size:14px;cursor:pointer;padding:0;line-height:1">✕</button>
       </div>
       <div style="font-size:15px;font-weight:600;line-height:1.45;margin-bottom:14px">
-        You've been calendar-wrangling for a bit, Clair Bear. Want a tiny breath before the next one?
+        You've been calendar-wrangling for a bit, Clair. Want a tiny breath before the next one?
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
         <button id="cc-l1-pause" style="${btnStyle(p.primary,'#fff')}width:100%;justify-content:center">
@@ -271,7 +271,7 @@
         CalmCal · ${minutes} min
       </div>
       <div style="font-size:24px;font-weight:800;line-height:1.2;margin-bottom:10px;letter-spacing:-0.4px">
-        Clair Bear, this might be getting heavy.
+        Clair, this might be getting heavy.
       </div>
       <div style="font-size:15px;line-height:1.5;color:#6B4A55;margin-bottom:22px">
         The calendar will still be here in 5&nbsp;minutes.<br>Want to step away for a bit?
@@ -356,7 +356,7 @@
         Strict mode · ${minutes} min
       </div>
       <div style="font-size:23px;font-weight:800;line-height:1.2;margin-bottom:10px;letter-spacing:-0.4px">
-        Tucking Calendar in for you, Clair Bear.
+        Tucking Calendar in for you, Clair.
       </div>
       <div style="font-size:14px;line-height:1.5;color:#6B4A55;margin-bottom:22px">
         Past Clair Bear was looking after present Clair Bear.<br>Closing in <span id="cc-l3-s">${secs}</span>&nbsp;seconds.
@@ -409,7 +409,7 @@
   function pauseToday() {
     removeOverlay();
     chrome.runtime.sendMessage({ type: 'PAUSE_TODAY' }).catch(() => {});
-    showToast('Paused for today, Clair Bear. Go enjoy yourself 🌷');
+    showToast('Paused for today, Clair. Go enjoy yourself 🌷');
   }
 
   function openCalm(seconds) {
