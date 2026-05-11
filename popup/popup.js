@@ -117,7 +117,7 @@ function renderHeader() {
   const mins = Math.round(activeSeconds / 60);
   const paused = pausedUntil && Date.now() < pausedUntil;
   document.getElementById('app-status').textContent =
-    paused ? 'Paused for today 🌷' : `Watching gently · ${mins} min today`;
+    paused ? 'Paused for today, Clair Bear 🌷' : `Watching gently, Clair Bear · ${mins} min today`;
 }
 
 function renderTodayBar() {
@@ -200,7 +200,7 @@ function bindActions() {
     await chrome.runtime.sendMessage({ type: 'PAUSE_TODAY' });
     btn.textContent = 'Paused for today ✓';
     btn.classList.add('paused');
-    document.getElementById('app-status').textContent = 'Paused for today 🌷';
+    document.getElementById('app-status').textContent = 'Paused for today, Clair Bear 🌷';
   });
 }
 

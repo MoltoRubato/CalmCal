@@ -196,14 +196,14 @@
           ${mascotSVG(mascot, 40)}
         </div>
         <div>
-          <div style="font-size:13px;font-weight:700;color:${p.plum};letter-spacing:0.2px">CalmCal</div>
+          <div style="font-size:13px;font-weight:700;color:${p.plum};letter-spacing:0.2px">Hey Clair Bear 🌷</div>
           <div style="font-size:11px;font-weight:600;color:#A88">${minutes} min of planning</div>
         </div>
         <div style="flex:1"></div>
         <button id="cc-l1-x" style="width:24px;height:24px;border:0;background:transparent;color:#BAA;font-size:14px;cursor:pointer;padding:0;line-height:1">✕</button>
       </div>
       <div style="font-size:15px;font-weight:600;line-height:1.45;margin-bottom:14px">
-        You've been calendar-wrangling for a bit. Want a tiny breath before the next one?
+        You've been calendar-wrangling for a bit, Clair Bear. Want a tiny breath before the next one?
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
         <button id="cc-l1-pause" style="${btnStyle(p.primary,'#fff')}width:100%;justify-content:center">
@@ -271,7 +271,7 @@
         CalmCal · ${minutes} min
       </div>
       <div style="font-size:24px;font-weight:800;line-height:1.2;margin-bottom:10px;letter-spacing:-0.4px">
-        This might be getting&nbsp;heavy.
+        Clair Bear, this might be getting heavy.
       </div>
       <div style="font-size:15px;line-height:1.5;color:#6B4A55;margin-bottom:22px">
         The calendar will still be here in 5&nbsp;minutes.<br>Want to step away for a bit?
@@ -356,10 +356,10 @@
         Strict mode · ${minutes} min
       </div>
       <div style="font-size:23px;font-weight:800;line-height:1.2;margin-bottom:10px;letter-spacing:-0.4px">
-        Tucking Calendar in&nbsp;for&nbsp;you.
+        Tucking Calendar in for you, Clair Bear.
       </div>
       <div style="font-size:14px;line-height:1.5;color:#6B4A55;margin-bottom:22px">
-        You chose this earlier -  past you was looking after now you.<br>Closing in <span id="cc-l3-s">${secs}</span>&nbsp;seconds.
+        Past Clair Bear was looking after present Clair Bear.<br>Closing in <span id="cc-l3-s">${secs}</span>&nbsp;seconds.
       </div>
       <div style="display:flex;gap:8px">
         <button id="cc-l3-now" style="${btnStyle(p.primary,'#fff')}flex:1;justify-content:center">
@@ -409,7 +409,7 @@
   function pauseToday() {
     removeOverlay();
     chrome.runtime.sendMessage({ type: 'PAUSE_TODAY' }).catch(() => {});
-    showToast('CalmCal paused for today. Enjoy your planning! 🌷');
+    showToast('Paused for today, Clair Bear. Go enjoy yourself 🌷');
   }
 
   function openCalm(seconds) {

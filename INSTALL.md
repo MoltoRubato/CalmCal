@@ -1,7 +1,7 @@
-# CalmCal -  Installation Guide
+# CalmCal - Installation Guide for Clair Bear
 
-A soft, local Chrome extension that gives a gentle nudge when calendar planning goes on too long.
-All data stays on your computer. No accounts, no tracking, no remote control.
+A soft, local Chrome extension made just for you. It gives a gentle nudge when calendar planning goes on too long.
+All data stays on your computer. No accounts, no tracking, no one watching except a tiny bunny.
 
 ---
 
@@ -20,7 +20,7 @@ All data stays on your computer. No accounts, no tracking, no remote control.
 ### Step 1 -  Get the files
 
 **Option A: Download a ZIP from GitHub**
-1. Go to the GitHub repository page (your partner will send you the link)
+1. Go to the GitHub repository page (Ryan will send you the link)
 2. Click the green **Code** button → **Download ZIP**
 3. Unzip the folder somewhere you'll remember (e.g. your Desktop)
 
