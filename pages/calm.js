@@ -113,10 +113,17 @@ function nextBreathPhase() {
 }
 setTimeout(nextBreathPhase, breathDurations[0]);
 
-// ── countdown ─────────────────────────────────────────────────────────────
+// ── countdown / lockout sync ──────────────────────────────────────────────
+// Two modes:
+//   1. Voluntary break: a flat 5-minute breathing timer.
+//   2. Hard lockout (strict mode triggered): respects lockUntil — back button
+//      is disabled until the lock expires, so closing and reopening Calendar
+//      can't bypass it.
 
-let secondsLeft = 5 * 60;
 const countEl = document.getElementById('countdown');
+const backBtn = document.getElementById('btn-back');
+let lockUntil = 0;
+let ticker = null;
 
 function formatTime(s) {
   const m = Math.floor(s / 60);
@@ -124,41 +131,75 @@ function formatTime(s) {
   return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
-const ticker = setInterval(() => {
-  secondsLeft--;
+function startVoluntaryTimer() {
+  let secondsLeft = 5 * 60;
   countEl.textContent = formatTime(secondsLeft);
-  if (secondsLeft <= 0) {
-    clearInterval(ticker);
-    countEl.textContent = '0:00';
-  }
-}, 1000);
+  ticker = setInterval(() => {
+    secondsLeft--;
+    if (secondsLeft <= 0) {
+      clearInterval(ticker);
+      ticker = null;
+      countEl.textContent = '0:00';
+    } else {
+      countEl.textContent = formatTime(secondsLeft);
+    }
+  }, 1000);
+}
 
-// ── back button ───────────────────────────────────────────────────────────
+function startLockoutTimer() {
+  backBtn.disabled = true;
+  backBtn.style.opacity = '0.5';
+  backBtn.style.cursor = 'not-allowed';
+  backBtn.textContent = 'Locked';
 
-document.getElementById('btn-back').addEventListener('click', () => {
-  window.history.back();
-  // fallback if no history
-  setTimeout(() => { window.location.href = 'https://calendar.google.com'; }, 300);
+  const tick = () => {
+    const secondsLeft = Math.max(0, Math.ceil((lockUntil - Date.now()) / 1000));
+    countEl.textContent = formatTime(secondsLeft);
+    if (secondsLeft <= 0) {
+      clearInterval(ticker);
+      ticker = null;
+      backBtn.disabled = false;
+      backBtn.style.opacity = '';
+      backBtn.style.cursor = '';
+      backBtn.textContent = "I'm ready, go back";
+      // Reset the day counters so user doesn't get re-triggered instantly.
+      chrome.runtime.sendMessage({ type: 'RESET_DAY' }).catch(() => {});
+    }
+  };
+  tick();
+  ticker = setInterval(tick, 1000);
+}
+
+backBtn.addEventListener('click', () => {
+  if (backBtn.disabled) return;
+  window.location.href = 'https://calendar.google.com';
 });
 
-// ── load settings ─────────────────────────────────────────────────────────
+// ── load state ────────────────────────────────────────────────────────────
 
 async function init() {
+  let state = null;
   try {
-    const state = await chrome.runtime.sendMessage({ type: 'GET_STATE' });
-    const s = state?.settings || {};
-    const p = PALETTES[s.palette] || PALETTES.blush;
-    const mascot = s.mascot || 'bunny';
+    state = await chrome.runtime.sendMessage({ type: 'GET_STATE' });
+  } catch { /* opened outside extension context */ }
 
-    applyPalette(p);
-    addConfetti(p);
+  const s = state?.settings || {};
+  const p = PALETTES[s.palette] || PALETTES.blush;
+  const mascot = s.mascot || 'bunny';
 
-    document.getElementById('mascot-wrap').innerHTML = mascotSVG(mascot, 180);
-    document.getElementById('headline').textContent = `Breathe with ${mascot}.`;
-  } catch {
-    // extension context unavailable (e.g. opened directly)
-    addConfetti(PALETTES.blush);
-    document.getElementById('mascot-wrap').innerHTML = mascotSVG('bunny', 180);
+  applyPalette(p);
+  addConfetti(p);
+  document.getElementById('mascot-wrap').innerHTML = mascotSVG(mascot, 180);
+  document.getElementById('headline').textContent = `Breathe with ${mascot}.`;
+
+  lockUntil = (state && state.lockUntil) || 0;
+  if (lockUntil && Date.now() < lockUntil) {
+    document.querySelector('.eyebrow').textContent = '✦  Strict cooldown · Calendar is resting  ✦';
+    document.querySelector('.sub').textContent =
+      "Past Clair Bear is looking after present Clair Bear. Calendar will reopen when the timer ends.";
+    startLockoutTimer();
+  } else {
+    startVoluntaryTimer();
   }
 }
 

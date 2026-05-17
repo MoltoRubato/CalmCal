@@ -24,7 +24,7 @@ function bunnysvg(size) {
 // ── state ─────────────────────────────────────────────────────────────────
 
 let currentStep = 0;
-let chosenMinutes = 12;
+let chosenMinutes = 15;
 let chosenStrict = false;
 
 const TOTAL_STEPS = 3;
@@ -88,13 +88,11 @@ document.querySelectorAll('.strict-opt').forEach((opt) => {
 // ── finish ────────────────────────────────────────────────────────────────
 
 async function finish() {
+  // Partial settings — service worker merges with defaults so we don't
+  // clobber other fields the user may have customised.
   const settings = {
     nudgeAfter: chosenMinutes,
     strictMode: chosenStrict,
-    dailyLimit: 25,
-    cooldown: 10,
-    mascot: 'bunny',
-    palette: 'blush',
   };
   try {
     await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });

@@ -43,24 +43,31 @@ async function init() {
   bindActions();
 }
 
+function isPaused() {
+  return pausedUntil && Date.now() < pausedUntil;
+}
+
 function renderHeader() {
   document.getElementById('mascot-slot').innerHTML = bunnysvg(40);
   const mins = Math.round(activeSeconds / 60);
-  const paused = pausedUntil && Date.now() < pausedUntil;
   document.getElementById('app-status').textContent =
-    paused ? 'Paused for today, Clair 🌷' : `Watching gently, Clair · ${mins} min today`;
+    isPaused() ? 'Paused for today, Clair 🌷' : `Watching gently, Clair · ${mins} min today`;
 }
 
 function renderTodayBar() {
   const mins = Math.round(activeSeconds / 60);
-  const limit = settings.dailyLimit || 25;
-  const pct = Math.min(100, (mins / limit) * 100);
-  const left = Math.max(0, limit - mins);
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-label').textContent =
-    settings.dailyLimit > 0
-      ? `${mins} of ${limit} min · ${left} min left`
-      : `${mins} min today`;
+  const limit = Number(settings.dailyLimit) || 0;
+  const fill = document.getElementById('progress-fill');
+  const label = document.getElementById('progress-label');
+  if (limit > 0) {
+    const pct = Math.min(100, (mins / limit) * 100);
+    const left = Math.max(0, limit - mins);
+    fill.style.width = pct + '%';
+    label.textContent = `${mins} of ${limit} min · ${left} min left`;
+  } else {
+    fill.style.width = '0%';
+    label.textContent = `${mins} min today · no limit set`;
+  }
 }
 
 function renderSettings() {
@@ -93,19 +100,25 @@ function renderSettings() {
 }
 
 function bindActions() {
-  const paused = pausedUntil && Date.now() < pausedUntil;
   const btn = document.getElementById('btn-pause');
-  if (paused) {
+  if (isPaused()) {
     btn.textContent = 'Paused for today ✓';
     btn.classList.add('paused');
   }
   btn.addEventListener('click', async () => {
-    if (paused) return;
+    if (isPaused()) return;
     await chrome.runtime.sendMessage({ type: 'PAUSE_TODAY' });
+    pausedUntil = endOfToday();
     btn.textContent = 'Paused for today ✓';
     btn.classList.add('paused');
     document.getElementById('app-status').textContent = 'Paused for today, Clair 🌷';
   });
+}
+
+function endOfToday() {
+  const d = new Date();
+  d.setHours(23, 59, 59, 999);
+  return d.getTime();
 }
 
 async function save() {

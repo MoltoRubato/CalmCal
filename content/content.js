@@ -93,6 +93,8 @@
   let currentLevel = 0;
   let overlayEl = null;
   let heartbeatInterval = null;
+  let overlayInterval = null;   // L3 countdown timer
+  let escHandler = null;
 
   // ── heartbeat ────────────────────────────────────────────────────────────
 
@@ -100,7 +102,15 @@
     if (heartbeatInterval) return;
     heartbeatInterval = setInterval(() => {
       if (document.visibilityState !== 'visible') return;
-      chrome.runtime.sendMessage({ type: 'HEARTBEAT' }).catch(() => {});
+      if (!document.hasFocus()) return;
+      chrome.runtime.sendMessage({ type: 'HEARTBEAT' })
+        .then((res) => {
+          // Defence-in-depth: if SW says we're locked, leave for calm.html.
+          if (res && res.locked) {
+            window.location.replace(chrome.runtime.getURL('pages/calm.html'));
+          }
+        })
+        .catch(() => {});
     }, 1000);
   }
 
@@ -151,13 +161,26 @@
   }
 
   function removeOverlay() {
+    if (overlayInterval) {
+      clearInterval(overlayInterval);
+      overlayInterval = null;
+    }
+    if (escHandler) {
+      document.removeEventListener('keydown', escHandler);
+      escHandler = null;
+    }
     if (overlayEl) {
       overlayEl.remove();
       overlayEl = null;
     }
-    // also remove any backdrop
     const bd = document.getElementById('calmcal-backdrop');
     if (bd) bd.remove();
+    currentLevel = 0;
+  }
+
+  function attachEsc(action) {
+    escHandler = (e) => { if (e.key === 'Escape') action(); };
+    document.addEventListener('keydown', escHandler);
   }
 
   function injectStyles(css) {
@@ -222,10 +245,11 @@
     document.body.appendChild(el);
     overlayEl = el;
 
-    el.querySelector('#cc-l1-x').onclick = () => dismiss();
-    el.querySelector('#cc-l1-keep').onclick = () => dismiss();
+    el.querySelector('#cc-l1-x').onclick = () => dismiss(1);
+    el.querySelector('#cc-l1-keep').onclick = () => dismiss(1);
     el.querySelector('#cc-l1-snooze').onclick = () => snooze(5);
     el.querySelector('#cc-l1-pause').onclick = () => openCalm(30);
+    attachEsc(() => dismiss(1));
   }
 
   // ── LEVEL 2: dimmed backdrop + centred modal ──────────────────────────────
@@ -290,7 +314,7 @@
         </div>
       </div>
       <div style="margin-top:18px;font-size:12px;color:#B89AA3">
-        You set this · <span id="cc-l2-settings" style="cursor:pointer;text-decoration:underline">settings</span> · <span id="cc-l2-dismiss" style="cursor:pointer">not now</span>
+        You set this · <span id="cc-l2-dismiss" style="cursor:pointer;text-decoration:underline">not now</span>
       </div>
     `;
     document.body.appendChild(el);
@@ -299,8 +323,8 @@
     el.querySelector('#cc-l2-away').onclick = () => openCalm(300);
     el.querySelector('#cc-l2-snooze').onclick = () => snooze(5);
     el.querySelector('#cc-l2-pause').onclick = () => pauseToday();
-    el.querySelector('#cc-l2-dismiss').onclick = () => dismiss();
-    el.querySelector('#cc-l2-settings').onclick = () => chrome.runtime.sendMessage({ type: 'OPEN_POPUP' });
+    el.querySelector('#cc-l2-dismiss').onclick = () => dismiss(2);
+    attachEsc(() => dismiss(2));
   }
 
   // ── LEVEL 3: strict mode ──────────────────────────────────────────────────
@@ -369,7 +393,7 @@
           One last thing
         </button>
       </div>
-      <div style="margin-top:14px;font-size:12px;color:#B89AA3">Cooldown · 15 min</div>
+      <div style="margin-top:14px;font-size:12px;color:#B89AA3">Cooldown · ${settings.cooldown || 10} min</div>
     `;
     document.body.appendChild(el);
     overlayEl = el;
@@ -377,28 +401,30 @@
     const ring = el.querySelector('#cc-ring');
     const circumference = 2 * Math.PI * 62;
 
-    const tick = setInterval(() => {
+    overlayInterval = setInterval(() => {
       secs--;
       const countEl = el.querySelector('#cc-l3-s');
       const countEl2 = el.querySelector('#cc-l3-count');
-      if (countEl) countEl.textContent = secs;
-      if (countEl2) countEl2.textContent = `0:0${Math.max(0,secs)}`;
-      if (ring) ring.style.strokeDashoffset = circumference * (1 - secs / 8);
+      const safe = Math.max(0, secs);
+      if (countEl) countEl.textContent = safe;
+      if (countEl2) countEl2.textContent = `0:0${safe}`;
+      if (ring) ring.style.strokeDashoffset = circumference * (1 - safe / 8);
       if (secs <= 0) {
-        clearInterval(tick);
-        closeTab();
+        clearInterval(overlayInterval);
+        overlayInterval = null;
+        strictClose();
       }
     }, 1000);
 
-    el.querySelector('#cc-l3-now').onclick = () => { clearInterval(tick); closeTab(); };
-    el.querySelector('#cc-l3-last').onclick = () => { clearInterval(tick); snooze(5); };
+    el.querySelector('#cc-l3-now').onclick = () => strictClose();
+    el.querySelector('#cc-l3-last').onclick = () => snooze(5);
   }
 
   // ── actions ───────────────────────────────────────────────────────────────
 
-  function dismiss() {
+  function dismiss(level) {
     removeOverlay();
-    chrome.runtime.sendMessage({ type: 'DISMISS' }).catch(() => {});
+    chrome.runtime.sendMessage({ type: 'DISMISS', level: level || 0 }).catch(() => {});
   }
 
   function snooze(minutes) {
@@ -412,14 +438,16 @@
     showToast('Paused for today, Clair. Go enjoy yourself 🌷');
   }
 
-  function openCalm(seconds) {
+  function openCalm() {
     removeOverlay();
     chrome.runtime.sendMessage({ type: 'CLOSE_TAB' }).catch(() => {});
     // The service worker will redirect this tab to calm.html
   }
 
-  function closeTab() {
-    chrome.runtime.sendMessage({ type: 'CLOSE_TAB' }).catch(() => {});
+  function strictClose() {
+    removeOverlay();
+    chrome.runtime.sendMessage({ type: 'STRICT_CLOSE' }).catch(() => {});
+    // SW will redirect all calendar tabs to calm.html and set a hard lock.
   }
 
   function showToast(text) {
