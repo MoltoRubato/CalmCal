@@ -25,31 +25,26 @@ function bunnySVG(size) {
 
 let enabled = true;
 let activeSeconds = 0;
-let pausedUntil = 0;
 let lockUntil = 0;
 
 async function init() {
   const state = await chrome.runtime.sendMessage({ type: 'GET_STATE' });
   enabled = state?.settings?.enabled !== false;
   activeSeconds = state?.activeSeconds || 0;
-  pausedUntil = state?.pausedUntil || 0;
   lockUntil = state?.lockUntil || 0;
 
   document.getElementById('mascot-slot').innerHTML = bunnySVG(40);
   render();
   bindToggle();
-  bindPause();
 }
 
-function isPaused() { return pausedUntil && Date.now() < pausedUntil; }
 function isLocked() { return lockUntil && Date.now() < lockUntil; }
 
 function render() {
   const mins = Math.round(activeSeconds / 60);
   const status = document.getElementById('app-status');
-  if (!enabled)        status.textContent = 'Off — sleeping quietly';
+  if (!enabled)        status.textContent = 'Off: sleeping quietly';
   else if (isLocked()) status.textContent = `Locked until tomorrow, Clair 🌷`;
-  else if (isPaused()) status.textContent = 'Paused for today, Clair 🌷';
   else                 status.textContent = `Watching gently, Clair · ${mins} min today`;
 
   const pct = Math.min(100, (mins / LIMIT_MIN) * 100);
@@ -61,16 +56,7 @@ function render() {
   const tog = document.getElementById('toggle-enabled');
   tog.classList.toggle('on', enabled);
   document.getElementById('enabled-sub').textContent =
-    enabled ? 'On — 5 min check-in, 15 min limit' : 'Off — sleeping quietly';
-
-  const pauseBtn = document.getElementById('btn-pause');
-  if (isPaused()) {
-    pauseBtn.textContent = 'Paused for today ✓';
-    pauseBtn.classList.add('paused');
-  } else {
-    pauseBtn.textContent = 'Pause CalmCal for today';
-    pauseBtn.classList.remove('paused');
-  }
+    enabled ? 'On: 5 min check-in, 15 min limit' : 'Off: sleeping quietly';
 }
 
 function bindToggle() {
@@ -79,21 +65,6 @@ function bindToggle() {
     await chrome.runtime.sendMessage({ type: 'SET_ENABLED', enabled });
     render();
   });
-}
-
-function bindPause() {
-  document.getElementById('btn-pause').addEventListener('click', async () => {
-    if (isPaused()) return;
-    await chrome.runtime.sendMessage({ type: 'PAUSE_TODAY' });
-    pausedUntil = endOfToday();
-    render();
-  });
-}
-
-function endOfToday() {
-  const d = new Date();
-  d.setHours(23, 59, 59, 999);
-  return d.getTime();
 }
 
 init();

@@ -16,7 +16,6 @@ const DEFAULTS = {
   lastHeartbeatTab: 0,
   lastDate: '',
   snoozeUntil: 0,
-  pausedUntil: 0,
   lockUntil: 0,
   nudgedToday: false,
   onboardingDone: false,
@@ -58,7 +57,6 @@ async function maybeResetDay() {
       lastDate: today,
       activeSeconds: 0,
       snoozeUntil: 0,
-      pausedUntil: 0,
       lockUntil: 0,
       nudgedToday: false,
     });
@@ -103,14 +101,6 @@ async function handleMessage(msg, sender) {
       return { ok: true };
     }
 
-    case 'PAUSE_TODAY':
-      await chrome.storage.local.set({ pausedUntil: endOfDay() });
-      return { ok: true };
-
-    case 'UNPAUSE_TODAY':
-      await chrome.storage.local.set({ pausedUntil: 0 });
-      return { ok: true };
-
     case 'DISMISS_NUDGE':
       // Nudge already fires once per day — nothing else to do, but mark it
       // dismissed for clarity.
@@ -139,9 +129,11 @@ async function handleMessage(msg, sender) {
 async function onHeartbeat(tab) {
   const now = Date.now();
   const tabId = tab?.id || 0;
-  const state = await chrome.storage.local.get(null);
 
+  // Reset BEFORE reading state — otherwise yesterday's activeSeconds/lockUntil
+  // would survive the day rollover and immediately re-lock the user.
   await maybeResetDay();
+  const state = await chrome.storage.local.get(null);
 
   if (!state.settings?.enabled) return { disabled: true };
 
@@ -153,8 +145,6 @@ async function onHeartbeat(tab) {
     }
     return { locked: true, lockUntil: state.lockUntil };
   }
-
-  if (state.pausedUntil && now < state.pausedUntil) return { paused: true };
 
   // Tab dedup — only one tab counts seconds. Ownership transfers if the
   // current owner has gone silent for >3s.
@@ -207,7 +197,13 @@ async function onHeartbeat(tab) {
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function dateStr() {
-  return new Date().toISOString().slice(0, 10);
+  // Local-time date key — matches endOfDay() so the reset lines up with the
+  // user's actual midnight, not UTC midnight.
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function endOfDay() {
