@@ -81,6 +81,7 @@ function setUnlocked() {
   backBtn.style.opacity = '';
   backBtn.style.cursor = '';
   backBtn.textContent = "I'm ready, go back";
+  document.getElementById('actions').style.display = '';
 }
 
 function startTimer() {
@@ -130,7 +131,9 @@ async function init() {
       '✦  Daily limit reached · Calendar resting  ✦';
     document.querySelector('.sub').textContent =
       "You hit your 15 minutes for today, Clair. Calendar reopens tomorrow: past Clair Bear has your back.";
-    timerBtn.firstChild && (timerBtn.innerHTML = '<span id="countdown">--:--</span> until calendar reopens');
+    // Hide the action pill while locked. setUnlocked() re-shows it once
+    // the lock expires so the user can navigate back to Calendar.
+    document.getElementById('actions').style.display = 'none';
     setLocked();
     startTimer();
   } else {
