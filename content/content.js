@@ -42,8 +42,11 @@
   function startHeartbeat() {
     if (heartbeatInterval) return;
     heartbeatInterval = setInterval(() => {
+      // Count whenever Calendar is the active tab. We deliberately do NOT
+      // also require document.hasFocus(), because that returns false the
+      // moment any other app (editor, Slack, etc.) is in front of Chrome —
+      // even though the user is still on Calendar.
       if (document.visibilityState !== 'visible') return;
-      if (!document.hasFocus()) return;
       chrome.runtime.sendMessage({ type: 'HEARTBEAT' })
         .then((res) => {
           // If SW says we're locked, leave for calm.html immediately.

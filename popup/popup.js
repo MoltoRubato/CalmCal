@@ -61,8 +61,16 @@ function render() {
 
 function bindToggle() {
   document.getElementById('toggle-enabled').addEventListener('click', async () => {
-    enabled = !enabled;
-    await chrome.runtime.sendMessage({ type: 'SET_ENABLED', enabled });
+    if (enabled) {
+      // Going ON → OFF needs the typing gate. Open the confirm page in a new
+      // tab; only that page can actually flip the setting to false.
+      await chrome.tabs.create({ url: chrome.runtime.getURL('pages/confirm-off.html') });
+      window.close();
+      return;
+    }
+    // Going OFF → ON is harmless, flip it directly.
+    enabled = true;
+    await chrome.runtime.sendMessage({ type: 'SET_ENABLED', enabled: true });
     render();
   });
 }

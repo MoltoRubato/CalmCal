@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>CalmCal · wait one second</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #FFF1F5; --primary: #F48FB1; --soft: #FFB6C9;
+      --cream: #FCE4EC; --ink: #3D2B30; --plum: #9D4A6B;
+    }
+    body {
+      font-family: Nunito, system-ui, sans-serif; color: var(--ink);
+      min-height: 100vh; overflow: hidden;
+      background: radial-gradient(circle at 70% 0%, var(--cream) 0%, var(--bg) 55%, var(--soft) 130%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 28px; position: relative;
+    }
+    .dot { position: absolute; border-radius: 50%; opacity: .55; pointer-events: none; z-index: 0; }
+    .blob {
+      position: absolute; border-radius: 50%; pointer-events: none;
+      filter: blur(14px); z-index: 0;
+    }
+    .blob-1 { top: -100px; left: -80px; width: 320px; height: 320px;
+      background: var(--soft); opacity: 0.35; }
+    .blob-2 { bottom: -140px; right: -80px; width: 360px; height: 360px;
+      background: var(--cream); opacity: 0.55; }
+
+    /* ── gate card ───────────────────────────────────────────────── */
+    .card {
+      position: relative; z-index: 2; width: 100%; max-width: 720px;
+      background: #fff; border-radius: 32px;
+      padding: 34px 38px 30px;
+      box-shadow: 0 40px 90px -25px rgba(124, 41, 79, 0.4), 0 0 0 1px rgba(244,143,177,.2);
+    }
+    .header { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
+    .mascot-frame {
+      width: 92px; height: 92px; border-radius: 46px; background: var(--bg);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      box-shadow: inset 0 0 0 2px var(--cream);
+    }
+    .eyebrow {
+      font-size: 11px; font-weight: 800; color: var(--plum);
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;
+    }
+    h1 {
+      font-size: 28px; font-weight: 900; line-height: 1.1; letter-spacing: -0.6px;
+    }
+    .sub {
+      font-size: 13px; color: #8C6A75; margin-top: 6px; line-height: 1.5;
+    }
+
+    .phrase-box {
+      background: var(--bg); border-radius: 18px; padding: 18px 20px;
+      margin-bottom: 14px; box-shadow: inset 0 0 0 1px var(--cream);
+    }
+    .phrase-label {
+      font-size: 10px; font-weight: 800; color: var(--plum);
+      letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    #phrase {
+      font-size: 15px; line-height: 1.65; color: var(--ink);
+      font-weight: 600; user-select: none;
+    }
+    #phrase span { padding: 0 1px; border-radius: 3px; transition: color .12s, background .12s; }
+    #phrase span.todo { color: #B89AA3; opacity: 0.7; }
+    #phrase span.next { color: var(--ink); background: var(--soft); font-weight: 600; }
+    #phrase span.done { color: var(--plum); opacity: 1; font-weight: 700; }
+
+    .ta-wrap { position: relative; margin-bottom: 14px; }
+    textarea {
+      width: 100%; min-height: 96px; padding: 14px 16px;
+      border-radius: 16px; border: 2px solid var(--cream);
+      background: #FFFBFC; resize: none;
+      font-family: Nunito, system-ui, sans-serif;
+      font-size: 15px; line-height: 1.5; color: var(--ink);
+      outline: none; transition: border-color .2s;
+    }
+    textarea.matched { border-color: var(--primary); }
+    .progress-chip {
+      position: absolute; right: 12px; bottom: 12px;
+      background: #fff; border-radius: 999px; padding: 4px 10px;
+      font-size: 11px; font-weight: 700; color: var(--plum);
+      box-shadow: 0 0 0 1px var(--cream);
+    }
+    .progress-bar {
+      height: 6px; border-radius: 3px; background: var(--bg);
+      overflow: hidden; margin-bottom: 18px;
+    }
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: var(--soft); border-radius: 3px;
+      transition: width .2s, background .2s;
+    }
+    .progress-fill.matched { background: var(--primary); }
+
+    .actions { display: flex; gap: 10px; }
+    .btn {
+      flex: 1; height: 50px; border-radius: 25px;
+      font-family: Nunito, system-ui, sans-serif;
+      font-size: 14px; font-weight: 800; letter-spacing: 0.2px;
+      cursor: pointer; transition: all .2s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-outline {
+      background: transparent; color: var(--plum);
+      border: 1.5px solid var(--soft);
+    }
+    .btn-outline:hover { background: var(--bg); }
+    .btn-primary {
+      border: 0; background: #EFD9E0; color: #B89AA3; cursor: not-allowed;
+    }
+    .btn-primary.enabled {
+      background: var(--primary); color: #fff; cursor: pointer;
+      box-shadow: 0 10px 24px -8px rgba(180,40,100,.45);
+    }
+    .btn-primary.enabled:hover { opacity: 0.9; }
+
+    .footer-note {
+      margin-top: 14px; text-align: center;
+      font-size: 11px; color: #B89AA3;
+    }
+
+    /* ── celebration screen ─────────────────────────────────────── */
+    #celebrate {
+      display: none; position: fixed; inset: 0; z-index: 10;
+      background: radial-gradient(circle at 30% 25%, var(--cream) 0%, var(--bg) 45%, var(--soft) 130%);
+      align-items: center; justify-content: center;
+      overflow: hidden;
+      animation: cc-fade-in .4s ease both;
+    }
+    #celebrate.show { display: flex; }
+    @keyframes cc-fade-in { from { opacity: 0 } to { opacity: 1 } }
+
+    .celebrate-inner {
+      text-align: center; max-width: 700px; padding: 40px;
+      position: relative; z-index: 2;
+    }
+    .floating-heart {
+      position: absolute; opacity: 0.55;
+      animation: cc-float 3.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes cc-float {
+      0%, 100% { transform: translateY(0) rotate(-4deg); }
+      50%      { transform: translateY(-10px) rotate(4deg); }
+    }
+    .mascot-orbit { position: relative; margin-bottom: 18px; display: inline-block; }
+    .orbit-heart {
+      position: absolute;
+      animation: cc-float 3s ease-in-out infinite;
+    }
+
+    .celebrate-eyebrow {
+      font-size: 13px; font-weight: 800; color: var(--plum);
+      letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .celebrate-title {
+      font-size: 64px; font-weight: 900; line-height: 1.0;
+      letter-spacing: -2px; margin-bottom: 14px; color: var(--ink);
+    }
+    .celebrate-title .heart { color: var(--primary); }
+    .celebrate-sub {
+      font-size: 22px; line-height: 1.4; color: #6B4A55;
+      margin-bottom: 36px; font-weight: 600;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 12px 18px 12px 14px; background: #fff; border-radius: 999px;
+      box-shadow: 0 10px 30px -8px rgba(124, 41, 79, 0.3), 0 0 0 1px rgba(244,143,177,.2);
+    }
+    .chip-mascot {
+      width: 30px; height: 30px; border-radius: 15px; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chip-label {
+      font-size: 13px; font-weight: 700; color: var(--plum);
+    }
+    .chip-divider { width: 1px; height: 18px; background: var(--cream); }
+    .chip-btn {
+      border: 0; background: var(--primary); color: #fff;
+      height: 34px; padding: 0 16px; border-radius: 17px;
+      font-family: Nunito, system-ui, sans-serif;
+      font-size: 13px; font-weight: 800; cursor: pointer;
+      box-shadow: 0 6px 14px -4px rgba(180,40,100,.5);
+      transition: opacity .15s;
+    }
+    .chip-btn:hover { opacity: 0.9; }
+    .celebrate-foot {
+      margin-top: 20px; font-size: 12px; color: #A88; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="card">
+    <div class="header">
+      <div class="mascot-frame" id="mascot-frame"></div>
+      <div style="flex:1;min-width:0">
+        <div class="eyebrow">✦ &nbsp;wait one second&nbsp; ✦</div>
+        <h1>Are you sure you want to switch me off?</h1>
+        <div class="sub">The 15-minute limit is there because past-you wanted it. Type the line below — exactly — if you really want to keep planning.</div>
+      </div>
+    </div>
+
+    <div class="phrase-box">
+      <div class="phrase-label">Type this, exactly</div>
+      <div id="phrase"></div>
+    </div>
+
+    <div class="ta-wrap">
+      <textarea id="ta" placeholder="start typing here…" spellcheck="false"></textarea>
+      <div class="progress-chip" id="chip">0%</div>
+    </div>
+
+    <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+
+    <div class="actions">
+      <button class="btn btn-outline" id="btn-cancel">← Nevermind, keep me on</button>
+      <button class="btn btn-primary" id="btn-confirm" disabled>Switch off CalmCal</button>
+    </div>
+
+    <div class="footer-note">
+      you can turn me back on anytime · 15 min limit applies on next planning session
+    </div>
+  </div>
+
+  <!-- celebration overlay -->
+  <div id="celebrate">
+    <div class="celebrate-inner">
+      <div class="mascot-orbit" id="celebrate-mascot"></div>
+      <div class="celebrate-eyebrow">✦ &nbsp;message received&nbsp; ✦</div>
+      <div class="celebrate-title">Ryan loves<br/>you too&nbsp;<span class="heart">&lt;3</span></div>
+      <div class="celebrate-sub">now go plan! &nbsp;go get em&nbsp;tiger 🐯</div>
+      <div class="chip">
+        <div class="chip-mascot" id="chip-mascot"></div>
+        <div class="chip-label">CalmCal is paused</div>
+        <div class="chip-divider"></div>
+        <button class="chip-btn" id="chip-btn">Open Google Calendar →</button>
+      </div>
+      <div class="celebrate-foot">I'll be quiet for the rest of today · tap the icon to wake me up</div>
+    </div>
+  </div>
+
+  <script src="confirm-off.js"></script>
+</body>
+</html>
