@@ -1,10 +1,10 @@
-// CalmCal popup script
-
-const PALETTE = { bg: '#FFF1F5', primary: '#F48FB1', soft: '#FFB6C9', cream: '#FCE4EC', ink: '#3D2B30', plum: '#9D4A6B' };
+// CalmCal popup — minimal: ON/OFF, today usage, pause for today.
 
 const FUR = '#FFF8FB', BLUSH = '#FFB6C9', STROKE = '#E89BB5', FACE = '#3D2B30';
 
-function bunnysvg(size) {
+const LIMIT_MIN = 15;
+
+function bunnySVG(size) {
   return `<svg viewBox="0 0 100 100" width="${size}" height="${size}">
     <ellipse cx="38" cy="22" rx="6" ry="16" fill="${FUR}" stroke="${STROKE}" stroke-width="1.5"/>
     <ellipse cx="62" cy="22" rx="6" ry="16" fill="${FUR}" stroke="${STROKE}" stroke-width="1.5"/>
@@ -23,95 +23,70 @@ function bunnysvg(size) {
   </svg>`;
 }
 
-// ── state ──────────────────────────────────────────────────────────────────
-
-let settings = { nudgeAfter: 10, strictMode: false, dailyLimit: 25, cooldown: 10, mascot: 'bunny', palette: 'blush' };
+let enabled = true;
 let activeSeconds = 0;
 let pausedUntil = 0;
-
-// ── init ───────────────────────────────────────────────────────────────────
+let lockUntil = 0;
 
 async function init() {
   const state = await chrome.runtime.sendMessage({ type: 'GET_STATE' });
-  settings = state.settings || settings;
-  activeSeconds = state.activeSeconds || 0;
-  pausedUntil = state.pausedUntil || 0;
+  enabled = state?.settings?.enabled !== false;
+  activeSeconds = state?.activeSeconds || 0;
+  pausedUntil = state?.pausedUntil || 0;
+  lockUntil = state?.lockUntil || 0;
 
-  renderHeader();
-  renderTodayBar();
-  renderSettings();
-  bindActions();
+  document.getElementById('mascot-slot').innerHTML = bunnySVG(40);
+  render();
+  bindToggle();
+  bindPause();
 }
 
-function isPaused() {
-  return pausedUntil && Date.now() < pausedUntil;
-}
+function isPaused() { return pausedUntil && Date.now() < pausedUntil; }
+function isLocked() { return lockUntil && Date.now() < lockUntil; }
 
-function renderHeader() {
-  document.getElementById('mascot-slot').innerHTML = bunnysvg(40);
+function render() {
   const mins = Math.round(activeSeconds / 60);
-  document.getElementById('app-status').textContent =
-    isPaused() ? 'Paused for today, Clair 🌷' : `Watching gently, Clair · ${mins} min today`;
-}
+  const status = document.getElementById('app-status');
+  if (!enabled)        status.textContent = 'Off — sleeping quietly';
+  else if (isLocked()) status.textContent = `Locked until tomorrow, Clair 🌷`;
+  else if (isPaused()) status.textContent = 'Paused for today, Clair 🌷';
+  else                 status.textContent = `Watching gently, Clair · ${mins} min today`;
 
-function renderTodayBar() {
-  const mins = Math.round(activeSeconds / 60);
-  const limit = Number(settings.dailyLimit) || 0;
-  const fill = document.getElementById('progress-fill');
-  const label = document.getElementById('progress-label');
-  if (limit > 0) {
-    const pct = Math.min(100, (mins / limit) * 100);
-    const left = Math.max(0, limit - mins);
-    fill.style.width = pct + '%';
-    label.textContent = `${mins} of ${limit} min · ${left} min left`;
-  } else {
-    fill.style.width = '0%';
-    label.textContent = `${mins} min today · no limit set`;
-  }
-}
+  const pct = Math.min(100, (mins / LIMIT_MIN) * 100);
+  const left = Math.max(0, LIMIT_MIN - mins);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent =
+    `${mins} of ${LIMIT_MIN} min · ${left} min left`;
 
-function renderSettings() {
-  document.querySelectorAll('.seg').forEach((seg) => {
-    const key = seg.dataset.key;
-    const val = String(settings[key]);
-    seg.querySelectorAll('.seg-opt').forEach((opt) => {
-      opt.classList.toggle('active', opt.dataset.val === val);
-      opt.addEventListener('click', () => {
-        const newVal = isNaN(opt.dataset.val) ? opt.dataset.val : Number(opt.dataset.val);
-        settings[key] = newVal;
-        seg.querySelectorAll('.seg-opt').forEach(o => o.classList.remove('active'));
-        opt.classList.add('active');
-        save();
-      });
-    });
-  });
+  const tog = document.getElementById('toggle-enabled');
+  tog.classList.toggle('on', enabled);
+  document.getElementById('enabled-sub').textContent =
+    enabled ? 'On — 5 min check-in, 15 min limit' : 'Off — sleeping quietly';
 
-  const tog = document.getElementById('toggle-strict');
-  tog.classList.toggle('on', settings.strictMode);
-  document.getElementById('strict-sub').textContent =
-    settings.strictMode ? 'Closes tab after limit' : 'Off - gentle nudges only';
-  tog.addEventListener('click', () => {
-    settings.strictMode = !settings.strictMode;
-    tog.classList.toggle('on', settings.strictMode);
-    document.getElementById('strict-sub').textContent =
-      settings.strictMode ? 'Closes tab after limit' : 'Off - gentle nudges only';
-    save();
-  });
-}
-
-function bindActions() {
-  const btn = document.getElementById('btn-pause');
+  const pauseBtn = document.getElementById('btn-pause');
   if (isPaused()) {
-    btn.textContent = 'Paused for today ✓';
-    btn.classList.add('paused');
+    pauseBtn.textContent = 'Paused for today ✓';
+    pauseBtn.classList.add('paused');
+  } else {
+    pauseBtn.textContent = 'Pause CalmCal for today';
+    pauseBtn.classList.remove('paused');
   }
-  btn.addEventListener('click', async () => {
+}
+
+function bindToggle() {
+  document.getElementById('toggle-enabled').addEventListener('click', async () => {
+    enabled = !enabled;
+    await chrome.runtime.sendMessage({ type: 'SET_ENABLED', enabled });
+    render();
+  });
+}
+
+function bindPause() {
+  document.getElementById('btn-pause').addEventListener('click', async () => {
     if (isPaused()) return;
     await chrome.runtime.sendMessage({ type: 'PAUSE_TODAY' });
     pausedUntil = endOfToday();
-    btn.textContent = 'Paused for today ✓';
-    btn.classList.add('paused');
-    document.getElementById('app-status').textContent = 'Paused for today, Clair 🌷';
+    render();
   });
 }
 
@@ -119,10 +94,6 @@ function endOfToday() {
   const d = new Date();
   d.setHours(23, 59, 59, 999);
   return d.getTime();
-}
-
-async function save() {
-  await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
 }
 
 init();

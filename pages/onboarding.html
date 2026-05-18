@@ -33,118 +33,52 @@
       from { transform: translateY(18px) scale(.95); opacity: 0; }
       to   { transform: translateY(0)   scale(1);   opacity: 1; }
     }
-
-    .step-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 22px; }
-    .step-dot {
-      height: 6px; border-radius: 3px;
-      background: var(--cream); transition: width .25s, background .25s;
-    }
-    .step-dot.active { background: var(--primary); }
-
     .mascot-wrap { margin-bottom: 18px; display: flex; justify-content: center; }
-
     .eyebrow {
       font-size: 12px; font-weight: 800; color: var(--plum);
       letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
     }
-    h2 { font-size: 34px; font-weight: 800; line-height: 1.1; letter-spacing: -.8px; margin-bottom: 14px; }
-    .body-text { font-size: 16px; color: #6B4A55; line-height: 1.55; margin-bottom: 28px; }
+    h2 { font-size: 30px; font-weight: 800; line-height: 1.15; letter-spacing: -.6px; margin-bottom: 14px; }
+    .body-text { font-size: 16px; color: #6B4A55; line-height: 1.55; margin-bottom: 24px; }
+
+    .rule-list {
+      list-style: none; text-align: left; margin: 0 auto 28px;
+      max-width: 360px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .rule-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 15px; color: var(--ink); line-height: 1.4;
+    }
+    .rule-list .num {
+      flex-shrink: 0; width: 28px; height: 28px; border-radius: 14px;
+      background: var(--bg); color: var(--plum);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800;
+    }
+    .rule-list strong { color: var(--plum); }
 
     .btn-primary {
       width: 100%; height: 50px; border: none; border-radius: 25px;
       background: var(--primary); color: #fff;
       font-family: Nunito, system-ui, sans-serif;
       font-size: 15px; font-weight: 700; cursor: pointer;
-      transition: opacity .15s; display: flex; align-items: center; justify-content: center;
+      transition: opacity .15s;
     }
     .btn-primary:hover { opacity: .85; }
-
-    .timing-grid { display: flex; gap: 10px; margin-bottom: 22px; }
-    .timing-opt {
-      flex: 1; padding: 18px 10px; border-radius: 16px;
-      background: var(--bg); text-align: center; cursor: pointer;
-      transition: box-shadow .15s, background .15s;
-    }
-    .timing-opt.active {
-      background: #fff;
-      box-shadow: 0 0 0 2.5px var(--primary), 0 8px 20px rgba(124,41,79,.15);
-    }
-    .timing-opt .big  { font-size: 26px; font-weight: 800; color: var(--plum); }
-    .timing-opt .unit { font-size: 11px; font-weight: 700; color: #9A7682; text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
-    .timing-opt .hint { font-size: 12px; color: #6B4A55; margin-top: 6px; }
-
-    .strict-grid { display: flex; gap: 10px; margin-bottom: 22px; }
-    .strict-opt {
-      flex: 1; padding: 18px; border-radius: 16px; text-align: left;
-      background: var(--bg); cursor: pointer;
-      transition: box-shadow .15s, background .15s;
-    }
-    .strict-opt.active {
-      background: #fff;
-      box-shadow: 0 0 0 2.5px var(--primary), 0 8px 20px rgba(124,41,79,.15);
-    }
-    .strict-opt .opt-title { font-size: 15px; font-weight: 800; color: var(--ink); }
-    .strict-opt.active .opt-title { color: var(--plum); }
-    .strict-opt .opt-sub { font-size: 12px; color: #6B4A55; margin-top: 4px; }
-
-    .step { display: none; }
-    .step.active { display: block; }
   </style>
 </head>
 <body>
   <div class="card">
-
-    <!-- Step 1: Welcome -->
-    <div class="step active" id="step-0">
-      <div class="mascot-wrap" id="mascot-0"></div>
-      <div class="eyebrow">✦ Hi Clair Bear, I'm CalmCal ✦</div>
-      <h2>Calendar stress<br>doesn't get to win.</h2>
-      <p class="body-text">I sit quietly in the corner of your browser. When planning has gone on long enough, I'll tap your shoulder - gently first.</p>
-      <div class="step-dots" id="dots-0"></div>
-      <button class="btn-primary" id="btn-0">Let's set you up, Clair →</button>
-    </div>
-
-    <!-- Step 2: Timing -->
-    <div class="step" id="step-1">
-      <div class="mascot-wrap" id="mascot-1"></div>
-      <div class="eyebrow">Step 2 · Timing</div>
-      <h2>How long is too long?</h2>
-      <p class="body-text">I'll wait this many minutes of <em>active</em> planning before my first gentle nudge.</p>
-      <div class="timing-grid" id="timing-grid">
-        <div class="timing-opt" data-min="10">
-          <div class="big">10</div><div class="unit">min</div><div class="hint">Quick</div>
-        </div>
-        <div class="timing-opt active" data-min="15">
-          <div class="big">15</div><div class="unit">min</div><div class="hint">Just right</div>
-        </div>
-        <div class="timing-opt" data-min="20">
-          <div class="big">20</div><div class="unit">min</div><div class="hint">Generous</div>
-        </div>
-      </div>
-      <div class="step-dots" id="dots-1"></div>
-      <button class="btn-primary" id="btn-1">Continue →</button>
-    </div>
-
-    <!-- Step 3: Strict mode -->
-    <div class="step" id="step-2">
-      <div class="mascot-wrap" id="mascot-2"></div>
-      <div class="eyebrow">Last step · Strict mode</div>
-      <h2>Want a firmer hand?</h2>
-      <p class="body-text">After your limit, I'll tuck Calendar away for a short cooldown. Totally optional - you can change this anytime.</p>
-      <div class="strict-grid" id="strict-grid">
-        <div class="strict-opt active" data-strict="false">
-          <div class="opt-title">Just nudges</div>
-          <div class="opt-sub">Soft only, always your call</div>
-        </div>
-        <div class="strict-opt" data-strict="true">
-          <div class="opt-title">Strict</div>
-          <div class="opt-sub">Closes tab after limit</div>
-        </div>
-      </div>
-      <div class="step-dots" id="dots-2"></div>
-      <button class="btn-primary" id="btn-2">✨ All set, take me to my calendar</button>
-    </div>
-
+    <div class="mascot-wrap" id="mascot"></div>
+    <div class="eyebrow">✦ Hi Clair Bear, I'm CalmCal ✦</div>
+    <h2>Stuck on ur calendar? O:  <br> I got u baby<br>(I hope this works)</h2>
+    <p class="body-text">this guy will stop ya <3 </p>
+    <ul class="rule-list">
+      <li><span class="num">5</span><span> you get a reminder after <strong>5 minutes</strong></span></li>
+      <li><span class="num">15</span><span>After <strong>15 minutes</strong> , we'll tuck away google calendar until tomorrow.</span></li>
+    </ul>
+    <button class="btn-primary" id="btn-finish">✨ Got it, take me to Calendar</button>
   </div>
   <script src="onboarding.js"></script>
 </body>

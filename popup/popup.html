@@ -10,7 +10,6 @@
 </head>
 <body>
   <div id="app">
-    <!-- header -->
     <div id="header">
       <div id="mascot-slot"></div>
       <div>
@@ -19,73 +18,31 @@
       </div>
     </div>
 
-    <!-- today bar -->
     <div id="today-bar">
       <div id="today-label-row">
-        <span class="label-sm" style="font-weight:800">Today</span>
+        <span class="label-sm">Today</span>
         <span class="muted">resets at midnight</span>
       </div>
-      <div id="progress-track">
-        <div id="progress-fill"></div>
-      </div>
+      <div id="progress-track"><div id="progress-fill"></div></div>
       <div id="progress-label"></div>
     </div>
 
-    <!-- settings rows -->
     <div id="settings">
       <div class="row">
         <div class="row-label">
-          <div class="row-title">Nudge after</div>
-          <div class="row-sub">Gentle reminder kicks in</div>
+          <div class="row-title">CalmCal</div>
+          <div class="row-sub" id="enabled-sub">On — watching gently</div>
         </div>
-        <div class="seg" id="seg-nudge" data-key="nudgeAfter">
-          <div class="seg-opt" data-val="10">10</div>
-          <div class="seg-opt" data-val="15">15</div>
-          <div class="seg-opt" data-val="20">20</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="row-label">
-          <div class="row-title">Strict mode</div>
-          <div class="row-sub" id="strict-sub">Off -  gentle nudges only</div>
-        </div>
-        <div class="toggle" id="toggle-strict">
+        <div class="toggle" id="toggle-enabled">
           <div class="toggle-thumb"></div>
         </div>
       </div>
-
-      <div class="row">
-        <div class="row-label">
-          <div class="row-title">Daily limit</div>
-          <div class="row-sub">Optional cap on planning</div>
-        </div>
-        <div class="seg" id="seg-limit" data-key="dailyLimit">
-          <div class="seg-opt" data-val="0">off</div>
-          <div class="seg-opt" data-val="25">25</div>
-          <div class="seg-opt" data-val="45">45</div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="row-label">
-          <div class="row-title">Cooldown</div>
-          <div class="row-sub">After closing the tab</div>
-        </div>
-        <div class="seg" id="seg-cooldown" data-key="cooldown">
-          <div class="seg-opt" data-val="5">5</div>
-          <div class="seg-opt" data-val="10">10</div>
-          <div class="seg-opt" data-val="15">15</div>
-        </div>
-      </div>
-
     </div>
 
-    <!-- footer -->
     <div id="footer">
       <button id="btn-pause">Pause CalmCal for today</button>
       <div id="footer-meta">
-        <span>local only</span><span>·</span><span>no data leaves</span><span>·</span><span>v1.0</span>
+        <span>5 min check-in</span><span>·</span><span>15 min limit</span><span>·</span><span>local only</span>
       </div>
     </div>
   </div>

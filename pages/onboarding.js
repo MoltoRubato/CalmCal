@@ -1,8 +1,8 @@
-// CalmCal onboarding — 3 steps, all event listeners (no inline onclick)
+// CalmCal onboarding — one screen, one button.
 
 const FUR = '#FFF8FB', BLUSH = '#FFB6C9', STROKE = '#E89BB5', FACE = '#3D2B30';
 
-function bunnysvg(size) {
+function bunnySVG(size) {
   return `<svg viewBox="0 0 100 100" width="${size}" height="${size}">
     <ellipse cx="38" cy="22" rx="6" ry="16" fill="${FUR}" stroke="${STROKE}" stroke-width="1.5"/>
     <ellipse cx="62" cy="22" rx="6" ry="16" fill="${FUR}" stroke="${STROKE}" stroke-width="1.5"/>
@@ -21,32 +21,6 @@ function bunnysvg(size) {
   </svg>`;
 }
 
-// ── state ─────────────────────────────────────────────────────────────────
-
-let currentStep = 0;
-let chosenMinutes = 15;
-let chosenStrict = false;
-
-const TOTAL_STEPS = 3;
-
-// ── helpers ───────────────────────────────────────────────────────────────
-
-function renderDots(containerId, activeIdx) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = Array.from({ length: TOTAL_STEPS }, (_, i) => {
-    const w = i === activeIdx ? 22 : 6;
-    return `<div class="step-dot ${i === activeIdx ? 'active' : ''}" style="width:${w}px"></div>`;
-  }).join('');
-}
-
-function goTo(step) {
-  document.getElementById(`step-${currentStep}`).classList.remove('active');
-  currentStep = step;
-  document.getElementById(`step-${currentStep}`).classList.add('active');
-  renderDots(`dots-${step}`, step);
-}
-
 function addConfetti() {
   const positions = [
     {x:6,y:10,s:7},{x:90,y:18,s:9},{x:12,y:82,s:11},
@@ -61,54 +35,12 @@ function addConfetti() {
   });
 }
 
-// ── wire up buttons ───────────────────────────────────────────────────────
-
-document.getElementById('btn-0').addEventListener('click', () => goTo(1));
-document.getElementById('btn-1').addEventListener('click', () => goTo(2));
-document.getElementById('btn-2').addEventListener('click', finish);
-
-// timing options
-document.querySelectorAll('.timing-opt').forEach((opt) => {
-  opt.addEventListener('click', () => {
-    document.querySelectorAll('.timing-opt').forEach(o => o.classList.remove('active'));
-    opt.classList.add('active');
-    chosenMinutes = Number(opt.dataset.min);
-  });
-});
-
-// strict options
-document.querySelectorAll('.strict-opt').forEach((opt) => {
-  opt.addEventListener('click', () => {
-    document.querySelectorAll('.strict-opt').forEach(o => o.classList.remove('active'));
-    opt.classList.add('active');
-    chosenStrict = opt.dataset.strict === 'true';
-  });
-});
-
-// ── finish ────────────────────────────────────────────────────────────────
-
-async function finish() {
-  // Partial settings — service worker merges with defaults so we don't
-  // clobber other fields the user may have customised.
-  const settings = {
-    nudgeAfter: chosenMinutes,
-    strictMode: chosenStrict,
-  };
-  try {
-    await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings });
-    await chrome.storage.local.set({ onboardingDone: true });
-  } catch {
-    // not in extension context (e.g. browser preview)
-  }
-  window.location.href = 'https://calendar.google.com';
-}
-
-// ── init ──────────────────────────────────────────────────────────────────
-
+document.getElementById('mascot').innerHTML = bunnySVG(110);
 addConfetti();
-renderDots('dots-0', 0);
 
-// inject bunny into all mascot slots
-document.getElementById('mascot-0').innerHTML = bunnysvg(150);
-document.getElementById('mascot-1').innerHTML = bunnysvg(90);
-document.getElementById('mascot-2').innerHTML = bunnysvg(90);
+document.getElementById('btn-finish').addEventListener('click', async () => {
+  try {
+    await chrome.runtime.sendMessage({ type: 'FINISH_ONBOARDING' });
+  } catch { /* opened outside extension context */ }
+  window.location.href = 'https://calendar.google.com';
+});
