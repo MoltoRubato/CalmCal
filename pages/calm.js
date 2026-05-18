@@ -193,6 +193,8 @@ async function init() {
     document.querySelector('.sub').textContent =
       "Take a moment with bunny. The week will hold itself together.";
   }
+
+  document.querySelector('.content').style.opacity = '1';
 }
 
 init();
