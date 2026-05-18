@@ -55,19 +55,11 @@ function nextBreathPhase() {
 }
 setTimeout(nextBreathPhase, breathDurations[0]);
 
-// ── countdown + back button ────────────────────────────────────────────────
+// ── back button + lockout detection ──────────────────────────────────────
 
-const countEl = document.getElementById('countdown');
 const backBtn = document.getElementById('btn-back');
-const timerBtn = document.getElementById('btn-timer');
 let lockUntil = 0;
 let ticker = null;
-
-function formatTime(s) {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${String(sec).padStart(2, '0')}`;
-}
 
 function setLocked() {
   backBtn.disabled = true;
@@ -86,23 +78,10 @@ function setUnlocked() {
 
 function startTimer() {
   const tick = () => {
-    const ms = lockUntil - Date.now();
-    if (ms <= 0) {
+    if (Date.now() >= lockUntil) {
       clearInterval(ticker);
       ticker = null;
-      countEl.textContent = '0:00';
       setUnlocked();
-      return;
-    }
-    const totalSec = Math.ceil(ms / 1000);
-    // Show H:MM:SS if over an hour, otherwise M:SS.
-    if (totalSec >= 3600) {
-      const h = Math.floor(totalSec / 3600);
-      const m = Math.floor((totalSec % 3600) / 60);
-      const s = totalSec % 60;
-      countEl.textContent = `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    } else {
-      countEl.textContent = formatTime(totalSec);
     }
   };
   tick();
@@ -114,11 +93,86 @@ backBtn.addEventListener('click', () => {
   window.location.href = 'https://calendar.google.com';
 });
 
+// ── animated / interactive background ─────────────────────────────────────
+
+const PETAL_COLORS = ['#FFB6C9', '#F48FB1', '#FCE4EC', '#ffd9e4'];
+const PREFERS_REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function spawnPetals(count = 16) {
+  if (PREFERS_REDUCED) return;
+  const container = document.getElementById('petals');
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    const size = 6 + Math.random() * 14;            // 6-20px
+    const left = Math.random() * 100;
+    const dur  = 22 + Math.random() * 26;           // 22-48s rise
+    const delay = -Math.random() * dur;             // negative = stagger from start
+    const drift = (Math.random() - 0.5) * 220;      // sideways drift in px
+    const spin  = (Math.random() - 0.5) * 540;      // rotation deg
+    const peak  = 0.35 + Math.random() * 0.35;      // peak opacity
+    const color = PETAL_COLORS[i % PETAL_COLORS.length];
+    p.style.cssText = `
+      left:${left}%; width:${size}px; height:${size}px;
+      background:${color};
+      animation-duration:${dur}s; animation-delay:${delay}s;
+      --drift:${drift}px; --spin:${spin}deg; --peak:${peak};
+    `;
+    frag.appendChild(p);
+  }
+  container.appendChild(frag);
+}
+
+// Cursor parallax — store normalized [-1..1] in CSS vars on <body>.
+// rAF-throttled so we update at most once per frame regardless of move rate.
+function attachParallax() {
+  if (PREFERS_REDUCED) return;
+  let mx = 0, my = 0, pending = false;
+  const onMove = (e) => {
+    mx = (e.clientX / window.innerWidth)  * 2 - 1;
+    my = (e.clientY / window.innerHeight) * 2 - 1;
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => {
+      document.body.style.setProperty('--mx', mx.toFixed(3));
+      document.body.style.setProperty('--my', my.toFixed(3));
+      pending = false;
+    });
+  };
+  const onLeave = () => {
+    requestAnimationFrame(() => {
+      document.body.style.setProperty('--mx', '0');
+      document.body.style.setProperty('--my', '0');
+    });
+  };
+  window.addEventListener('pointermove', onMove, { passive: true });
+  window.addEventListener('pointerleave', onLeave);
+}
+
+// Soft ripple on click — spawns one ring at the cursor and removes it after.
+function attachRipple() {
+  document.addEventListener('click', (e) => {
+    if (PREFERS_REDUCED) return;
+    // Ignore clicks on the action buttons so they feel snappy.
+    if (e.target.closest('button')) return;
+    const r = document.createElement('div');
+    r.className = 'ripple';
+    r.style.left = e.clientX + 'px';
+    r.style.top  = e.clientY + 'px';
+    document.body.appendChild(r);
+    r.addEventListener('animationend', () => r.remove(), { once: true });
+  });
+}
+
 // ── init ──────────────────────────────────────────────────────────────────
 
 async function init() {
   document.getElementById('mascot-wrap').innerHTML = bunnySVG(180);
   addConfetti();
+  spawnPetals(16);
+  attachParallax();
+  attachRipple();
 
   let state = null;
   try { state = await chrome.runtime.sendMessage({ type: 'GET_STATE' }); }
@@ -131,17 +185,13 @@ async function init() {
       '✦  Daily limit reached · Calendar resting  ✦';
     document.querySelector('.sub').textContent =
       "You hit your 15 minutes for today, Clair. Calendar reopens tomorrow: past Clair Bear has your back.";
-    // Hide the action pill while locked. setUnlocked() re-shows it once
-    // the lock expires so the user can navigate back to Calendar.
+    // setUnlocked() re-shows this once the lock expires.
     document.getElementById('actions').style.display = 'none';
     setLocked();
     startTimer();
   } else {
-    // Not locked: user opened calm page directly. Just a friendly breather.
     document.querySelector('.sub').textContent =
       "Take a moment with bunny. The week will hold itself together.";
-    countEl.textContent = '∞';
-    timerBtn.innerHTML = 'just breathe';
   }
 }
 

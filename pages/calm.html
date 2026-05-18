@@ -22,15 +22,90 @@
       background: radial-gradient(circle at 30% 20%, var(--cream) 0%, var(--bg) 50%, var(--soft) 130%);
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; position: relative;
+      /* Mouse-position vars, normalized [-1..1]. Updated by JS via rAF. */
+      --mx: 0; --my: 0;
     }
 
-    /* blobs */
-    .blob { position: absolute; border-radius: 50%; filter: blur(12px); pointer-events: none; }
-    .blob-1 { top: -120px; right: -120px; width: 380px; height: 380px; background: var(--cream); opacity: .6; }
-    .blob-2 { bottom: -160px; left: -100px; width: 420px; height: 420px; background: var(--soft); opacity: .4; filter: blur(14px); }
+    /* ── slow drifting mesh layer ───────────────────────────────────── */
+    .bg-mesh {
+      position: absolute; inset: -25%;
+      pointer-events: none; z-index: 0;
+      opacity: 0.55;
+      background:
+        radial-gradient(at 30% 30%, var(--cream)   0px, transparent 50%),
+        radial-gradient(at 75% 20%, var(--soft)    0px, transparent 55%),
+        radial-gradient(at 20% 75%, var(--cream)   0px, transparent 50%),
+        radial-gradient(at 80% 80%, var(--soft)    0px, transparent 55%),
+        radial-gradient(at 50% 50%, #ffd9e4        0px, transparent 60%);
+      animation: cc-mesh 90s linear infinite;
+      will-change: transform;
+    }
+    @keyframes cc-mesh {
+      from { transform: rotate(0deg)   scale(1.0); }
+      50%  {                            transform: rotate(180deg) scale(1.08); }
+      to   { transform: rotate(360deg) scale(1.0); }
+    }
 
-    /* confetti dots */
+    /* ── blobs (parallax wrappers + slow drift) ─────────────────────── */
+    .blob-wrap {
+      position: absolute; pointer-events: none; z-index: 0;
+      transition: transform .8s cubic-bezier(.2,.7,.2,1);
+      will-change: transform;
+    }
+    .blob-wrap-1 { top: -120px; right: -120px;
+      transform: translate3d(calc(var(--mx) * -22px), calc(var(--my) * -22px), 0); }
+    .blob-wrap-2 { bottom: -160px; left: -100px;
+      transform: translate3d(calc(var(--mx) * 34px), calc(var(--my) * 34px), 0); }
+    .blob {
+      border-radius: 50%; filter: blur(12px);
+      animation: cc-blob 14s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+    .blob-1 { width: 380px; height: 380px; background: var(--cream); opacity: .6; }
+    .blob-2 { width: 420px; height: 420px; background: var(--soft); opacity: .4; filter: blur(14px);
+      animation-duration: 18s; animation-delay: -7s; }
+    @keyframes cc-blob {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to   { transform: translate3d(20px, -16px, 0) scale(1.06); }
+    }
+
+    /* ── drifting petals (cherry-blossom feel) ──────────────────────── */
+    #petals { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .petal {
+      position: absolute; bottom: -24px;
+      border-radius: 50%;
+      animation: cc-rise linear infinite;
+      will-change: transform, opacity;
+      opacity: 0;
+    }
+    @keyframes cc-rise {
+      0%   { transform: translate3d(0, 0, 0) rotate(0deg);                   opacity: 0; }
+      10%  {                                                                  opacity: var(--peak, 0.5); }
+      90%  {                                                                  opacity: var(--peak, 0.5); }
+      100% { transform: translate3d(var(--drift, 0px), -110vh, 0) rotate(var(--spin, 240deg)); opacity: 0; }
+    }
+
+    /* ── click ripple ────────────────────────────────────────────────── */
+    .ripple {
+      position: absolute; pointer-events: none; z-index: 1;
+      width: 24px; height: 24px; margin: -12px 0 0 -12px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      opacity: 0.7;
+      animation: cc-ripple 1.2s ease-out forwards;
+    }
+    @keyframes cc-ripple {
+      to { transform: scale(18); opacity: 0; border-width: 0.5px; }
+    }
+
+    /* confetti dots (kept for the unlocked breather state) */
     .dot { position: absolute; border-radius: 50%; opacity: .55; pointer-events: none; }
+
+    /* Respect users who prefer less motion: hold the picture still. */
+    @media (prefers-reduced-motion: reduce) {
+      .bg-mesh, .blob, .petal { animation: none; }
+      .blob-wrap { transition: none; }
+    }
 
     .content {
       text-align: center;
@@ -40,7 +115,7 @@
       z-index: 2;
     }
 
-    #mascot-wrap { margin-bottom: 24px; }
+    #mascot-wrap { width: 180px; height: 180px; margin: 0 auto 24px; }
 
     .eyebrow {
       font-size: 13px; font-weight: 800; color: var(--plum);
@@ -94,15 +169,14 @@
       transition: opacity .15s;
     }
     button:hover { opacity: .82; }
-    #btn-timer { background: transparent; color: var(--plum); }
     #btn-back  { background: var(--primary); color: #fff; }
-
-    #countdown { font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body>
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
+  <div class="bg-mesh"></div>
+  <div class="blob-wrap blob-wrap-1"><div class="blob blob-1"></div></div>
+  <div class="blob-wrap blob-wrap-2"><div class="blob blob-2"></div></div>
+  <div id="petals"></div>
 
   <div class="content">
     <div id="mascot-wrap"></div>
@@ -110,7 +184,7 @@
     <div class="eyebrow">✦ &nbsp;Clair Bear, calendar can wait&nbsp; ✦</div>
     <h1 id="headline">Breathe with bunny.</h1>
     <p class="sub">
-      You've been planning hard, Clair. The week will hold itself together for the next five minutes.
+      Take a moment with bunny. The week will hold itself together.
     </p>
 
     <div id="breath-wrap">
@@ -120,7 +194,6 @@
     </div>
 
     <div id="actions">
-      <button id="btn-timer"><span id="countdown">5:00</span> left</button>
       <button id="btn-back">I'm ready, go back</button>
     </div>
   </div>
