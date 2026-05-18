@@ -109,9 +109,10 @@ async function handleMessage(msg, sender) {
 
     case 'SNOOZE_NUDGE':
       // 5-min silence. The hard 15-min lockout still applies.
+      // Reset nudgedToday so the nudge re-fires once the snooze expires.
       await chrome.storage.local.set({
         snoozeUntil: Date.now() + 5 * 60_000,
-        nudgedToday: true,
+        nudgedToday: false,
       });
       return { ok: true };
 
