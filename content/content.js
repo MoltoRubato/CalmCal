@@ -1,4 +1,4 @@
-// CalmCal content script — runs on calendar.google.com
+// CalmCal content script: runs on calendar.google.com
 // One job: send heartbeats and render the single 5-minute check-in nudge.
 // The hard 15-min limit is enforced entirely by the service worker
 // (redirects + lockUntil), so a refresh cannot escape it.
@@ -44,7 +44,7 @@
     heartbeatInterval = setInterval(() => {
       // Count whenever Calendar is the active tab. We deliberately do NOT
       // also require document.hasFocus(), because that returns false the
-      // moment any other app (editor, Slack, etc.) is in front of Chrome —
+      // moment any other app (editor, Slack, etc.) is in front of Chrome -
       // even though the user is still on Calendar.
       if (document.visibilityState !== 'visible') return;
       chrome.runtime.sendMessage({ type: 'HEARTBEAT' })
@@ -149,7 +149,7 @@
         <button id="cc-x" aria-label="Dismiss" style="width:24px;height:24px;border:0;background:transparent;color:#BAA;font-size:14px;cursor:pointer;padding:0;line-height:1">✕</button>
       </div>
       <div style="font-size:15px;font-weight:600;line-height:1.45;margin-bottom:14px">
-        Just checking in, Clair — Calendar will tuck in at 15 min. Want a tiny breath first?
+        Just checking in, Clair: Calendar will tuck in at 15 min. Want a tiny breath first?
       </div>
       <div style="display:flex;gap:6px">
         <button id="cc-snooze" style="${btnStyle(P.cream, P.plum)}flex:1;justify-content:center;font-size:13px">

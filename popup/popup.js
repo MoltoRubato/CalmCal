@@ -1,4 +1,4 @@
-// CalmCal popup — minimal: ON/OFF, today usage, pause for today.
+// CalmCal popup: minimal: ON/OFF, today usage, pause for today.
 
 const FUR = '#FFF8FB', BLUSH = '#FFB6C9', STROKE = '#E89BB5', FACE = '#3D2B30';
 

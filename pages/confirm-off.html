@@ -38,6 +38,7 @@
       box-shadow: 0 40px 90px -25px rgba(124, 41, 79, 0.4), 0 0 0 1px rgba(244,143,177,.2);
     }
     .header { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
+    .header-text { flex: 1; min-width: 0; }
     .mascot-frame {
       width: 92px; height: 92px; border-radius: 46px; background: var(--bg);
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
@@ -65,8 +66,10 @@
     #phrase {
       font-size: 15px; line-height: 1.65; color: var(--ink);
       font-weight: 600; user-select: none;
+      overflow-wrap: anywhere;
     }
     #phrase span { padding: 0 1px; border-radius: 3px; transition: color .12s, background .12s; }
+    #phrase span.space { white-space: normal; }
     #phrase span.todo { color: #B89AA3; opacity: 0.7; }
     #phrase span.next { color: var(--ink); background: var(--soft); font-weight: 600; }
     #phrase span.done { color: var(--plum); opacity: 1; font-weight: 700; }
@@ -202,10 +205,10 @@
   <div class="card">
     <div class="header">
       <div class="mascot-frame" id="mascot-frame"></div>
-      <div style="flex:1;min-width:0">
+      <div class="header-text">
         <div class="eyebrow">✦ &nbsp;wait one second&nbsp; ✦</div>
         <h1>Are you sure you want to switch me off?</h1>
-        <div class="sub">The 15-minute limit is there because past-you wanted it. Type the line below — exactly — if you really want to keep planning.</div>
+        <div class="sub">The 15-minute limit is there because past-you wanted it. Type the line below: exactly: if you really want to keep planning.</div>
       </div>
     </div>
 

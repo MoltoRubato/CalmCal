@@ -1,4 +1,4 @@
-// CalmCal onboarding — one screen, one button.
+// CalmCal onboarding: one screen, one button.
 
 const FUR = '#FFF8FB', BLUSH = '#FFB6C9', STROKE = '#E89BB5', FACE = '#3D2B30';
 

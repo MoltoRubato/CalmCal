@@ -1,4 +1,4 @@
-// CalmCal background service worker — MV3
+// CalmCal background service worker: MV3
 // All state lives in chrome.storage.local (service workers can be killed at any time).
 
 const CALENDAR_MATCH = /^https:\/\/calendar\.google\.com\//;
@@ -102,7 +102,7 @@ async function handleMessage(msg, sender) {
     }
 
     case 'DISMISS_NUDGE':
-      // Nudge already fires once per day — nothing else to do, but mark it
+      // Nudge already fires once per day: nothing else to do, but mark it
       // dismissed for clarity.
       await chrome.storage.local.set({ nudgedToday: true });
       return { ok: true };
@@ -130,14 +130,14 @@ async function onHeartbeat(tab) {
   const now = Date.now();
   const tabId = tab?.id || 0;
 
-  // Reset BEFORE reading state — otherwise yesterday's activeSeconds/lockUntil
+  // Reset BEFORE reading state: otherwise yesterday's activeSeconds/lockUntil
   // would survive the day rollover and immediately re-lock the user.
   await maybeResetDay();
   const state = await chrome.storage.local.get(null);
 
   if (!state.settings?.enabled) return { disabled: true };
 
-  // Hard lockout — defence in depth alongside tabs.onUpdated.
+  // Hard lockout: defence in depth alongside tabs.onUpdated.
   if (state.lockUntil && now < state.lockUntil) {
     if (tabId) {
       chrome.tabs.update(tabId, { url: chrome.runtime.getURL('pages/calm.html') })
@@ -146,7 +146,7 @@ async function onHeartbeat(tab) {
     return { locked: true, lockUntil: state.lockUntil };
   }
 
-  // Tab dedup — only one tab counts seconds. Ownership transfers if the
+  // Tab dedup: only one tab counts seconds. Ownership transfers if the
   // current owner has gone silent for >3s.
   const lastHB = state.lastHeartbeat || 0;
   const ownerStale = !lastHB || now - lastHB > 3000;
@@ -163,7 +163,7 @@ async function onHeartbeat(tab) {
     activeSeconds,
   });
 
-  // Hard limit hit — lock everything for the rest of the day.
+  // Hard limit hit: lock everything for the rest of the day.
   if (activeSeconds >= LIMIT_SECONDS) {
     const lockUntil = endOfDay();
     await chrome.storage.local.set({ lockUntil });
@@ -197,7 +197,7 @@ async function onHeartbeat(tab) {
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function dateStr() {
-  // Local-time date key — matches endOfDay() so the reset lines up with the
+  // Local-time date key: matches endOfDay() so the reset lines up with the
   // user's actual midnight, not UTC midnight.
   const d = new Date();
   const y = d.getFullYear();

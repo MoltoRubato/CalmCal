@@ -1,8 +1,7 @@
-// CalmCal confirm-off — typing gate + Ryan-loves-you-too landing.
+// CalmCal confirm-off: typing gate + Ryan-loves-you-too landing.
 
 const REQUIRED_PHRASE = "I want to be on google calendar for longer but won't get stressed thinking too far ahead. Life will be okay, and I will have a great day after planning this all out <3 I love Ryan";
-
-// ── mascot ──────────────────────────────────────────────────────────────
+const CALENDAR_URL = 'https://calendar.google.com';
 
 const FUR = '#FFF8FB', BLUSH = '#FFB6C9', STROKE = '#E89BB5', FACE = '#3D2B30';
 
@@ -40,8 +39,6 @@ function heartSVG(size, color) {
   </svg>`;
 }
 
-// ── confetti + floating hearts ──────────────────────────────────────────
-
 function addConfetti() {
   const dots = [
     {x:6,y:10,s:7,c:'#FFB6C9'}, {x:90,y:18,s:9,c:'#F48FB1'}, {x:12,y:82,s:11,c:'#FCE4EC'},
@@ -77,7 +74,32 @@ function addFloatingHearts(container) {
   });
 }
 
-// ── phrase rendering ────────────────────────────────────────────────────
+function goToCalendar() { window.location.href = CALENDAR_URL; }
+
+// ── DOM refs cached once ────────────────────────────────────────────────
+
+const ta = document.getElementById('ta');
+const phraseEl = document.getElementById('phrase');
+const chipEl = document.getElementById('chip');
+const fillEl = document.getElementById('fill');
+const btnConfirm = document.getElementById('btn-confirm');
+
+// ── phrase: build spans once, mutate classNames on update ───────────────
+
+const phraseSpans = [];
+let lastCorrect = -1;
+
+function buildPhraseSpans() {
+  const frag = document.createDocumentFragment();
+  for (const ch of REQUIRED_PHRASE) {
+    const span = document.createElement('span');
+    span.className = ch === ' ' ? 'todo space' : 'todo';
+    span.textContent = ch;
+    frag.appendChild(span);
+    phraseSpans.push(span);
+  }
+  phraseEl.appendChild(frag);
+}
 
 function correctPrefixLen(typed) {
   let i = 0;
@@ -85,47 +107,48 @@ function correctPrefixLen(typed) {
   return i;
 }
 
-function renderPhrase(typed) {
-  const correct = correctPrefixLen(typed);
-  const phraseEl = document.getElementById('phrase');
-  phraseEl.innerHTML = REQUIRED_PHRASE.split('').map((ch, i) => {
-    const cls = i < correct ? 'done' : i === correct ? 'next' : 'todo';
-    // Escape entities; the only special chars we expect are '<' and '>' from "<3"
-    const safe = ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === ' ' ? '&nbsp;' : ch;
-    return `<span class="${cls}">${safe}</span>`;
-  }).join('');
+function updatePhraseSpans(correct) {
+  if (correct === lastCorrect) return;
+  const lo = Math.min(lastCorrect, correct);
+  const hi = Math.max(lastCorrect, correct);
+  for (let i = Math.max(0, lo); i <= hi && i < phraseSpans.length; i++) {
+    const state = i < correct ? 'done' : i === correct ? 'next' : 'todo';
+    const isSpace = REQUIRED_PHRASE[i] === ' ';
+    phraseSpans[i].className = isSpace ? `${state} space` : state;
+  }
+  lastCorrect = correct;
 }
 
 // ── update on each keystroke ────────────────────────────────────────────
 
 function update() {
-  const ta = document.getElementById('ta');
   const typed = ta.value;
   const correct = correctPrefixLen(typed);
-  const pct = Math.min(1, correct / REQUIRED_PHRASE.length);
   const ok = typed === REQUIRED_PHRASE;
+  const pct = Math.min(1, correct / REQUIRED_PHRASE.length);
 
-  renderPhrase(typed);
+  updatePhraseSpans(correct);
 
-  const chip = document.getElementById('chip');
-  chip.textContent = ok ? '✓ matched' : `${Math.round(pct * 100)}%`;
-
-  const fill = document.getElementById('fill');
-  fill.style.width = (pct * 100) + '%';
-  fill.classList.toggle('matched', ok);
-
+  chipEl.textContent = ok ? '✓ matched' : `${Math.round(pct * 100)}%`;
+  fillEl.style.width = (pct * 100) + '%';
+  fillEl.classList.toggle('matched', ok);
   ta.classList.toggle('matched', ok);
 
-  const btn = document.getElementById('btn-confirm');
-  btn.disabled = !ok;
-  btn.classList.toggle('enabled', ok);
-  btn.textContent = ok ? 'Switch off CalmCal →' : 'Switch off CalmCal';
+  btnConfirm.disabled = !ok;
+  btnConfirm.classList.toggle('enabled', ok);
+  btnConfirm.textContent = ok ? 'Switch off CalmCal →' : 'Switch off CalmCal';
 }
 
 // ── celebration → actually disable + open Calendar ──────────────────────
 
 async function confirmOff() {
-  // Build mascot + orbiting hearts in the celebration screen
+  // Land the disable first so a fast clicker can't escape before it commits.
+  try {
+    await chrome.runtime.sendMessage({ type: 'SET_ENABLED', enabled: false });
+  } catch (e) {
+    console.warn('[CalmCal] SET_ENABLED failed', e);
+  }
+
   const mascotWrap = document.getElementById('celebrate-mascot');
   mascotWrap.innerHTML = bunnySVG(180, 'happy');
   const orbits = [
@@ -147,33 +170,17 @@ async function confirmOff() {
   const celebrateBox = document.getElementById('celebrate');
   addFloatingHearts(celebrateBox);
   celebrateBox.classList.add('show');
-
-  // Actually disable CalmCal in storage.
-  try {
-    await chrome.runtime.sendMessage({ type: 'SET_ENABLED', enabled: false });
-  } catch {}
 }
 
 // ── wire up ─────────────────────────────────────────────────────────────
 
 document.getElementById('mascot-frame').innerHTML = bunnySVG(78, 'sleepy');
 addConfetti();
-renderPhrase('');
+buildPhraseSpans();
+update();
+ta.focus();
 
-document.getElementById('ta').addEventListener('input', update);
-document.getElementById('ta').focus();
-
-document.getElementById('btn-cancel').addEventListener('click', () => {
-  // CalmCal stays on; just take them to Calendar.
-  window.location.href = 'https://calendar.google.com';
-});
-
-document.getElementById('btn-confirm').addEventListener('click', () => {
-  const btn = document.getElementById('btn-confirm');
-  if (btn.disabled) return;
-  confirmOff();
-});
-
-document.getElementById('chip-btn').addEventListener('click', () => {
-  window.location.href = 'https://calendar.google.com';
-});
+ta.addEventListener('input', update);
+document.getElementById('btn-cancel').addEventListener('click', goToCalendar);
+btnConfirm.addEventListener('click', () => { if (!btnConfirm.disabled) confirmOff(); });
+document.getElementById('chip-btn').addEventListener('click', goToCalendar);

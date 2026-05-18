@@ -1,5 +1,5 @@
-// CalmCal calm page — shown during the 15-min daily lockout.
-// Until lockUntil expires, the back button is disabled — refresh/new-tab
+// CalmCal calm page: shown during the 15-min daily lockout.
+// Until lockUntil expires, the back button is disabled: refresh/new-tab
 // bypass is impossible because the service worker redirects every
 // calendar.google.com navigation back here.
 
@@ -129,12 +129,12 @@ async function init() {
     document.querySelector('.eyebrow').textContent =
       '✦  Daily limit reached · Calendar resting  ✦';
     document.querySelector('.sub').textContent =
-      "You hit your 15 minutes for today, Clair. Calendar reopens tomorrow — past Clair Bear has your back.";
+      "You hit your 15 minutes for today, Clair. Calendar reopens tomorrow: past Clair Bear has your back.";
     timerBtn.firstChild && (timerBtn.innerHTML = '<span id="countdown">--:--</span> until calendar reopens');
     setLocked();
     startTimer();
   } else {
-    // Not locked — user opened calm page directly. Just a friendly breather.
+    // Not locked: user opened calm page directly. Just a friendly breather.
     document.querySelector('.sub').textContent =
       "Take a moment with bunny. The week will hold itself together.";
     countEl.textContent = '∞';
